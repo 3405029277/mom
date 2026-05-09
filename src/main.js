@@ -85,7 +85,7 @@ app.innerHTML = `
       <div class="intro-copy">
         <span>Mother's Day · 2026</span>
         <h1>给妈妈的一封花信</h1>
-        <p>粉色粒子会完成倒计时，花朵绽放后进入故事。点击按钮会同时解锁手机音乐播放。</p>
+        <p>倒计时结束，粉色花朵绽放后，故事从这里开始。点击按钮会同时解锁手机音乐播放。</p>
         <button class="start-button" type="button" data-start>开启祝福</button>
       </div>
     </section>
@@ -100,8 +100,16 @@ app.innerHTML = `
     <main class="slides" data-slides>
       ${slides.map(renderSlide).join("")}
     </main>
+    <div class="story-path" aria-hidden="true">
+      <span></span>
+      <i></i>
+    </div>
     <div class="swipe-hint" data-hint>上滑或右滑继续</div>
     <div class="dots" data-dots></div>
+    <div class="image-viewer" data-viewer aria-hidden="true">
+      <button type="button" class="viewer-close" data-viewer-close aria-label="关闭图片">×</button>
+      <img src="" alt="放大的照片" data-viewer-img>
+    </div>
   </div>
 `;
 
@@ -114,6 +122,10 @@ const musicLabel = app.querySelector("[data-music-label]");
 let memoryScene = null;
 
 intro.start();
+
+window.setTimeout(() => {
+  introPanel.classList.add("is-ready");
+}, 3300);
 
 startButton.addEventListener("click", async () => {
   await audio.unlockAudio();
@@ -134,6 +146,18 @@ const controller = createSlideController(app, {
     app.dataset.scene = String(index + 1);
     ensureMemoryScene();
   }
+});
+
+app.addEventListener("click", (event) => {
+  const trigger = event.target.closest("[data-viewer-src]");
+  if (trigger) {
+    openImageViewer(trigger.dataset.viewerSrc, trigger.querySelector("img")?.alt || "照片");
+  }
+});
+
+app.querySelector("[data-viewer-close]").addEventListener("click", closeImageViewer);
+app.querySelector("[data-viewer]").addEventListener("click", (event) => {
+  if (event.target.matches("[data-viewer]")) closeImageViewer();
 });
 
 function setMusicLabel() {
@@ -181,9 +205,9 @@ function renderVisual(type) {
   if (type === "wall") {
     return `
       <div class="photo-wall" aria-label="妈妈的照片墙">
-        <figure><img src="/assets/mom-1.jpg" alt="妈妈的照片一"><figcaption>温柔日常</figcaption></figure>
-        <figure><img src="/assets/mom-2.jpg" alt="妈妈的照片二"><figcaption>岁月花开</figcaption></figure>
-        <figure><img src="/assets/mom-3.jpg" alt="妈妈的照片三"><figcaption>心里有光</figcaption></figure>
+        <figure data-viewer-src="/assets/mom-1.jpg"><img src="/assets/mom-1.jpg" alt="妈妈的照片一"><figcaption>温柔日常</figcaption></figure>
+        <figure data-viewer-src="/assets/mom-2.jpg"><img src="/assets/mom-2.jpg" alt="妈妈的照片二"><figcaption>岁月花开</figcaption></figure>
+        <figure data-viewer-src="/assets/mom-3.jpg"><img src="/assets/mom-3.jpg" alt="妈妈的照片三"><figcaption>心里有光</figcaption></figure>
       </div>
     `;
   }
@@ -217,6 +241,21 @@ function renderVisual(type) {
       </svg>
     </div>
   `;
+}
+
+function openImageViewer(src, alt) {
+  const viewer = app.querySelector("[data-viewer]");
+  const image = app.querySelector("[data-viewer-img]");
+  image.src = src;
+  image.alt = alt;
+  viewer.classList.add("is-open");
+  viewer.setAttribute("aria-hidden", "false");
+}
+
+function closeImageViewer() {
+  const viewer = app.querySelector("[data-viewer]");
+  viewer.classList.remove("is-open");
+  viewer.setAttribute("aria-hidden", "true");
 }
 
 window.__story = { controller };
