@@ -45,6 +45,32 @@ const checks = [
     const config = read("vite.config.js");
     assert.match(config, /base:\s*["']\.\/["']/);
     assert.match(config, /outDir:\s*["']dist["']/);
+  }],
+  ["intro panel does not cover countdown before ready", () => {
+    const css = read("src/styles.css");
+    const main = read("src/main.js");
+    assert.match(css, /\.intro-panel:not\(\.is-ready\)/);
+    assert.match(main, /introPanel\.classList\.add\("is-ready"\)/);
+  }],
+  ["photo wall images can open in a viewer", () => {
+    const main = read("src/main.js");
+    const css = read("src/styles.css");
+    assert.match(main, /data-viewer/);
+    assert.match(main, /openImageViewer/);
+    assert.match(css, /\.image-viewer/);
+  }],
+  ["mobile layout has story path and no bottom button navigation", () => {
+    const main = read("src/main.js");
+    const css = read("src/styles.css");
+    assert.match(main, /story-path/);
+    assert.match(css, /\.story-path/);
+    assert.doesNotMatch(main, /下一页|上一页|nextBtn/);
+  }],
+  ["background uses layered translucent gradient", () => {
+    const css = read("src/styles.css");
+    assert.match(css, /linear-gradient\(180deg/);
+    assert.match(css, /rgba\(/);
+    assert.match(css, /backdrop-filter/);
   }]
 ];
 
